@@ -1,47 +1,50 @@
-const http = require('http');
-const { MongoClient } = require('mongodb');
+const express = require('express');
+const serverless = require('serverless-http');
+const app = express();
+const router = express.Router();
 
-// MongoDB connection URL and database name
-const mongoURI = "mongodb+srv://Berrios:Jessica@cluster0.xmtm4ms.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
-const dbName = "CarDB";
+let records = [];
 
-// Create a basic HTTP server
-const server = http.createServer(async (req, res) => {
-    console.log(req.url);
-    // Check requested URL path
-    if (req.url === '/api/cars') {
-        try {
-            // Connect to MongoDB
-            const client = new MongoClient(mongoURI, { useUnifiedTopology: true });
-            await client.connect();
-
-            // Access the db and collection
-            const db = client.db(dbName);
-            const collection = db.collection('cars');
-
-            // Retrieve car data from MongoDB
-            const cars = await collection.find({}).toArray();
-
-            // Close the MongoDB client
-            await client.close();
-
-            // Serve JSON data for cars
-            res.writeHead(200, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify(cars));
-        } catch (error) {
-            console.error('Error fetching car data:', error);
-            res.writeHead(500, { 'Content-Type': 'text/plain' });
-            res.end('Internal Server Error');
-        }
-    } else {
-        // Return 404 for other routes
-        res.writeHead(404, { 'Content-Type': 'text/html' });
-        res.end('<h1>404 Not Found</h1>');
-    }
+//Get all students
+router.get('/', (req, res) => {
+  res.send('App is running..');
 });
 
-// Start the server
-const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+//Create new record
+router.post('/add', (req, res) => {
+  res.send('New record added.');
 });
+
+//delete existing record
+router.delete('/', (req, res) => {
+  res.send('Deleted existing record');
+});
+
+//updating existing record
+router.put('/', (req, res) => {
+  res.send('Updating existing record');
+});
+
+//showing demo records
+router.get('/demo', (req, res) => {
+  res.json([
+    {
+      id: '001',
+      name: 'Smith',
+      email: 'smith@gmail.com',
+    },
+    {
+      id: '002',
+      name: 'Sam',
+      email: 'sam@gmail.com',
+    },
+    {
+      id: '003',
+      name: 'lily',
+      email: 'lily@gmail.com',
+    },
+  ]);
+});
+
+app.use('/.netlify/functions/api', router);
+module.exports.handler = serverless(app);
